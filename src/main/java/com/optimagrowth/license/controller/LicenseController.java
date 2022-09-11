@@ -3,6 +3,7 @@ package com.optimagrowth.license.controller;
 import com.optimagrowth.license.model.License;
 import com.optimagrowth.license.service.LicenseService;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.hateoas.server.mvc.WebMvcLinkBuilder;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
 
@@ -21,6 +22,21 @@ public class LicenseController {
             @PathVariable("licenseId") String licenseId) {
         License license = licenseService
                 .getLicense(licenseId,organizationId);
+
+        //Реализация Spring HATEOAS для отображения связанных ссылок
+        license.add(WebMvcLinkBuilder.linkTo(WebMvcLinkBuilder.methodOn(LicenseController.class)
+                        .getLicense(organizationId, license.getLicenseId()))
+                        .withSelfRel(),
+                WebMvcLinkBuilder.linkTo(WebMvcLinkBuilder.methodOn(LicenseController.class)
+                        .createLicense(organizationId, license, null))
+                        .withRel("createLicense"),
+                WebMvcLinkBuilder.linkTo(WebMvcLinkBuilder.methodOn(LicenseController.class)
+                        .updateLicense(organizationId, license))
+                        .withRel("updateLicense"),
+                WebMvcLinkBuilder.linkTo(WebMvcLinkBuilder.methodOn(LicenseController.class)
+                        .deleteLicense(organizationId, license.getLicenseId()))
+                        .withRel("deleteLicense"));
+
         return ResponseEntity.ok(license);
     }
 
